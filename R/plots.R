@@ -128,36 +128,41 @@ plotly_heatmap <- function(x, limits = range(x), colors = viridis(n=256, alpha =
                                                                   end = 1, option = "viridis"),
     row_text_angle = 0, column_text_angle = 45, grid.color, grid.size, key.title = NULL,
     row_dend_left = FALSE, fontsize_row = 10, fontsize_col = 10, colorbar_xanchor = "left",
-    key_title = "", colorbar_yanchor = "bottom", colorbar_xpos = 1.1, colorbar_ypos = 1, colorbar_len = 0.3) {
-
+    key_title = "", colorbar_yanchor = "bottom", colorbar_xpos = 1.1, colorbar_ypos = 1, colorbar_len = 0.3,
+    printlabs = prod(dim(x)) < 1000) {
+  
   if (is.function(colors)) colors <- colors(256)
 
   if(is.null(rownames(x))) rownames(x) <- 1:nrow(x)
   if(is.null(colnames(x))) colnames(x) <- 1:ncol(x)
 
-  p <- plot_ly(z = x,
-               # x = 1:ncol(x), y = 1:nrow(x),
-               x = colnames(x), y = rownames(x),
-    type = "heatmap", showlegend = FALSE, colors = colors,
-    zmin = limits[1], zmax = limits[2]) %>%
-    plotly::layout(
-        xaxis = list(
+  xaxis_list <- list(
           tickfont = list(size = fontsize_col),
           tickangle = column_text_angle,
-          # tickvals = 1:ncol(x), ticktext = colnames(x),
           linecolor = "#ffffff",
-          range = c(0.5, ncol(x) + 0.5) #,
-          # showticklabels = TRUE
-        ),
-        yaxis = list(
+          range = c(0.5, ncol(x) + 0.5),
+          showticklabels = FALSE
+        )
+  yaxis_list <- list(
           tickfont = list(size = fontsize_row),
           tickangle = row_text_angle,
-          # tickvals = 1:nrow(x), ticktext = rownames(x),
           linecolor = "#ffffff",
-          range = c(0.5, nrow(x) + 0.5) #,
-          # showticklabels = TRUE
+          range = c(0.5, nrow(x) + 0.5),
+          showticklabels = FALSE
         )
-      )
+  if (printlabs) {
+    yaxis_list[["showticklabels"]] <- xaxis_list[["showticklabels"]] <- TRUE
+    xaxis_list[["tickvals"]] <- 1:ncol(x)
+    yaxis_list[["tickvals"]] <- 1:nrow(x)
+    xaxis_list[["ticktext"]] <- colnames(x)
+    yaxis_list[["ticktext"]] <- rownames(x)
+  }
+
+  p <- plot_ly(z = x, x = 1:ncol(x), y = 1:nrow(x),
+    type = "heatmap", showlegend = FALSE, colors = colors,
+    zmin = limits[1], zmax = limits[2]) %>%
+    plotly::layout(xaxis = xaxis_list, yaxis = yaxis_list)
+
   p <- plotly::colorbar(p, lenmode = "fraction", title = key_title,
     xanchor = colorbar_xanchor, x = colorbar_xpos, y = colorbar_ypos,
     yanchor = colorbar_yanchor, len=colorbar_len)
@@ -244,7 +249,6 @@ plotly_dend <- function(dend, side = c("row", "col"), flip = FALSE) {
   colors <- sort(unique(segs$col))
   if (is.numeric(colors)) colors <- gplots::col2hex(grDevices::palette()[seq_along(colors)])
   # if (is.null(colors)) colors <- "black"
-
 
   lab_max <- nrow(dend_data$labels)
   if (side == "row") lab_max <- lab_max + 0.5
