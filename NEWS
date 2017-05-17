@@ -12,6 +12,9 @@ heatmaply 0.10.0 (2017-05-17)
 	- Add `cellnote_textposition` argument, which controls the justification of cellnote within a cell.
 	  See [the plotly documentation](https://plot.ly/javascript/reference/#scatter-textposition) for more details.
   - dendrogram parameter can now accept TRUE/FALSE as synonyms for "both"/"none".
+  - Add `print_labels` parameter to toggle printing of column/row labels when
+    `plot_method="plotly"`. Useful when dimensions are very large (label printing
+    reduces performance)
 
 heatmaply 0.9.2 (2017-05-05)
 ==============================
