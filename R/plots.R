@@ -132,25 +132,30 @@ plotly_heatmap <- function(x, limits = range(x), colors = viridis(n=256, alpha =
 
   if (is.function(colors)) colors <- colors(256)
 
-  p <- plot_ly(z = x, x = 1:ncol(x), y = 1:nrow(x),
+  if(is.null(rownames(x))) rownames(x) <- 1:nrow(x)
+  if(is.null(colnames(x))) colnames(x) <- 1:ncol(x)
+
+  p <- plot_ly(z = x,
+               # x = 1:ncol(x), y = 1:nrow(x),
+               x = colnames(x), y = rownames(x),
     type = "heatmap", showlegend = FALSE, colors = colors,
     zmin = limits[1], zmax = limits[2]) %>%
-      layout(
+    plotly::layout(
         xaxis = list(
           tickfont = list(size = fontsize_col),
           tickangle = column_text_angle,
-          tickvals = 1:ncol(x), ticktext = colnames(x),
+          # tickvals = 1:ncol(x), ticktext = colnames(x),
           linecolor = "#ffffff",
-          range = c(0.5, ncol(x) + 0.5),
-          showticklabels = TRUE
+          range = c(0.5, ncol(x) + 0.5) #,
+          # showticklabels = TRUE
         ),
         yaxis = list(
           tickfont = list(size = fontsize_row),
           tickangle = row_text_angle,
-          tickvals = 1:nrow(x), ticktext = rownames(x),
+          # tickvals = 1:nrow(x), ticktext = rownames(x),
           linecolor = "#ffffff",
-          range = c(0.5, nrow(x) + 0.5),
-          showticklabels = TRUE
+          range = c(0.5, nrow(x) + 0.5) #,
+          # showticklabels = TRUE
         )
       )
   p <- plotly::colorbar(p, lenmode = "fraction", title = key_title,
