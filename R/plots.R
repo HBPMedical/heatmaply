@@ -129,8 +129,8 @@ plotly_heatmap <- function(x, limits = range(x), colors = viridis(n=256, alpha =
     row_text_angle = 0, column_text_angle = 45, grid.color, grid.size, key.title = NULL,
     row_dend_left = FALSE, fontsize_row = 10, fontsize_col = 10, colorbar_xanchor = "left",
     key_title = "", colorbar_yanchor = "bottom", colorbar_xpos = 1.1, colorbar_ypos = 1, colorbar_len = 0.3,
-    printlabs = prod(dim(x)) < 1000) {
-  
+    print_labels = sum(dim(x)) < 5000) {
+  print(sum(dim(x)))
   if (is.function(colors)) colors <- colors(256)
 
   if(is.null(rownames(x))) rownames(x) <- 1:nrow(x)

@@ -38,7 +38,7 @@ heatmaply_cor(x, limits = c(-1, 1), colors = RdBu, ...)
   subplot_widths = NULL, subplot_heights = NULL, colorbar_len = 0.3,
   colorbar_xanchor = if (row_dend_left) "right" else "left",
   colorbar_yanchor = "bottom", colorbar_xpos = if (row_dend_left) -0.1 else
-  1.1, colorbar_ypos = 0, col)
+  1.1, colorbar_ypos = 0, col, print_labels = NULL)
 
 \method{heatmaply}{heatmapr}(x, colors = viridis(n = 256, alpha = 1, begin =
   0, end = 1, option = "viridis"), limits = NULL, na.value = "grey50",
@@ -57,7 +57,7 @@ heatmaply_cor(x, limits = c(-1, 1), colors = RdBu, ...)
   subplot_widths = NULL, subplot_heights = NULL, colorbar_xanchor = if
   (row_dend_left) "right" else "left", colorbar_yanchor = "bottom",
   colorbar_xpos = if (row_dend_left) -0.1 else 1.1, colorbar_ypos = 0,
-  colorbar_len = 0.3)
+  colorbar_len = 0.3, print_labels = NULL)
 }
 \arguments{
 \item{x}{can either be a heatmapr object, or a numeric matrix
@@ -282,6 +282,10 @@ See \code{\link[plotly]{colorbar}} for more details.}
 
 \item{colorbar_xpos, colorbar_ypos}{The x and y co-ordinates (in proportion of the plot window)
 of the colorbar/color legend. See \code{\link[plotly]{colorbar}} for more details.}
+
+\item{print_labels}{Print row and column labels? Useful for when there are
+a large number of labels. Default is TRUE unless the total dimensions 
+(sum(dim(x))) is greater than 5000}
 }
 \description{
 An object of class heatmapr includes all the needed information

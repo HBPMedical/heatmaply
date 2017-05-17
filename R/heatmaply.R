@@ -236,6 +236,10 @@ is.plotly <- function(x) {
 #' @param colorbar_xpos,colorbar_ypos The x and y co-ordinates (in proportion of the plot window)
 #' of the colorbar/color legend. See \code{\link[plotly]{colorbar}} for more details.
 #'
+#' @param print_labels Print row and column labels? Useful for when there are
+#'  a large number of labels. Default is TRUE unless the total dimensions 
+#'  (sum(dim(x))) is greater than 5000
+#' 
 #' @export
 #' @examples
 #' \dontrun{
@@ -479,7 +483,8 @@ heatmaply.default <- function(x,
                               colorbar_yanchor = "bottom",
                               colorbar_xpos = if(row_dend_left) -0.1 else 1.1,
                               colorbar_ypos = 0,
-                              col) {
+                              col,
+                              print_labels = NULL) {
 
   if (!missing(long_data)) {
     if (!missing(x)) warning("x and long_data should not be used together")
@@ -635,7 +640,8 @@ heatmaply.default <- function(x,
                      colorbar_xanchor = colorbar_xanchor,
                      colorbar_yanchor = colorbar_yanchor,
                      colorbar_xpos = colorbar_xpos,
-                     colorbar_ypos = colorbar_ypos)
+                     colorbar_ypos = colorbar_ypos,
+                     print_labels = print_labels)
 
                      # TODO: think more on what should be passed in "..."
 
@@ -822,8 +828,12 @@ heatmaply.heatmapr <- function(x,
                                colorbar_yanchor = "bottom",
                                colorbar_xpos = if(row_dend_left) -0.1 else 1.1,
                                colorbar_ypos = 0,
-                               colorbar_len = 0.3) {
+                               colorbar_len = 0.3, 
+                               print_labels = NULL) {
 
+  if (is.null(print_labels)) {
+    print_labels <- sum(dim(x[["matrix"]][["data"]])) < 5000
+  }
   plot_method <- match.arg(plot_method)
   cellnote_textposition <- match.arg(cellnote_textposition,
     choices = c("top left", "top center" , "top right", "middle left",
@@ -926,7 +936,7 @@ heatmaply.heatmapr <- function(x,
       fontsize_row = fontsize_row, fontsize_col = fontsize_col,
       colorbar_yanchor = colorbar_yanchor, colorbar_xanchor = colorbar_xanchor,
       colorbar_xpos = colorbar_xpos, colorbar_ypos = colorbar_ypos,
-      colorbar_len = colorbar_len)
+      colorbar_len = colorbar_len, print_labels = print_labels)
   }
 
 
