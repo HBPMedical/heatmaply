@@ -881,12 +881,12 @@ heatmaply.heatmapr <- function(x,
   #                  theme = theme, options = options)
   # x <- heatmapr(mtcars)
   # source: http://stackoverflow.com/questions/6528180/ggplot2-plot-without-axes-legends-etc
-  theme_clear_grid_dends <- theme(axis.line=element_blank(),axis.text.x=element_blank(),
-        axis.text.y=element_blank(),axis.ticks=element_blank(),
+  theme_clear_grid_dends <- theme(axis.line=element_blank(), axis.text.x=element_blank(),
+        axis.text.y=element_blank(), axis.ticks=element_blank(),
         axis.title.x=element_blank(),
-        axis.title.y=element_blank(),legend.position="none",
-        panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-        panel.grid.minor=element_blank(),plot.background=element_blank())
+        axis.title.y=element_blank(), legend.position="none",
+        panel.background=element_blank(), panel.border=element_blank(),panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(), plot.background=element_blank())
   # dendrograms:
   rows <- x$rows
   cols <- x$cols
@@ -904,9 +904,14 @@ heatmaply.heatmapr <- function(x,
   } else {
     if (plot_method == "ggplot") {
       col_ggdend <- as.ggdend(cols)
-      xlims <- c(0.5, nrow(col_ggdend$labels) + 0.5)
-      py <- ggplot(cols, labels  = FALSE) + theme_bw() +
-        coord_cartesian(expand = FALSE, xlim = xlims) +
+      col_ggdend <- dend_disc_to_cont(col_ggdend)
+
+      # xlims <- c(0.5, nrow(col_ggdend$labels) + 0.5)
+
+      py <- ggplot(cols, labels  = FALSE, nodes=FALSE) + theme_bw() +
+        coord_cartesian(expand = FALSE
+        	# , xlim = xlims
+        	) +
         theme_clear_grid_dends
     } else {
       suppressWarnings(      py <- plotly_dend(cols, side = "col"))
@@ -917,11 +922,14 @@ heatmaply.heatmapr <- function(x,
   } else {
     if (plot_method == "ggplot") {
       row_ggdend <- as.ggdend(rows)
-      ylims <- c(0.5, nrow(row_ggdend$labels) + 0.5)
+  		row_ggdend <- dend_disc_to_cont(row_ggdend)
+      
+      # ylims <- c(0.5, nrow(row_ggdend$labels) + 0.5)
 
-      px <- ggplot(row_ggdend, labels  = FALSE) +
-        # coord_cartesian(expand = FALSE) +
-        coord_flip(expand = FALSE, xlim = ylims) +
+      px <- ggplot(row_ggdend, labels  = FALSE, nodes=FALSE) +
+        coord_flip(expand = FALSE
+        	# , xlim = ylims
+        	) +
         theme_bw() +
         theme_clear_grid_dends
       if (row_dend_left) px <- px + scale_y_reverse()
@@ -953,10 +961,6 @@ heatmaply.heatmapr <- function(x,
       colorbar_xpos = colorbar_xpos, colorbar_ypos = colorbar_ypos,
       colorbar_len = colorbar_len)
   }
-
-
-
-
 
 
   # TODO: Add native plotly sidecolor function.
@@ -1004,6 +1008,15 @@ heatmaply.heatmapr <- function(x,
   ## plotly:
   # turn p, px, and py to plotly objects if necessary
   if (!is.plotly(p)) p <- ggplotly(p) %>% layout(showlegend=FALSE)
+	if (!is.null(px) && !is.plotly(px)) {
+	  px <- ggplotly(px, tooltip = "y") %>%
+	    layout(showlegend=FALSE)
+	}
+	if (!is.null(py) && !is.plotly(py)) {
+	  py <- ggplotly(py, tooltip = "y") %>%
+	    layout(showlegend=FALSE)
+	}
+
 
   if (draw_cellnote) {
     ## Predict cell color luminosity based on colorscale
@@ -1025,14 +1038,7 @@ heatmaply.heatmapr <- function(x,
         textfont = list(color = plotly::toRGB(cellnote_color), size = 12)
       )
   }
-  if (!is.null(px) && !is.plotly(px)) {
-    px <- ggplotly(px, tooltip = "y") %>%
-      layout(showlegend=FALSE)
-  }
-  if (!is.null(py) && !is.plotly(py)) {
-    py <- ggplotly(py, tooltip = "y") %>%
-      layout(showlegend=FALSE)
-  }
+
 
   # https://plot.ly/r/reference/#Layout_and_layout_style_objects
   p <- layout(p,              # all of layout's properties: /r/reference/#layout

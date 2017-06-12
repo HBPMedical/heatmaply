@@ -221,10 +221,21 @@ k_colors <- function(k) {
   }
 }
 
+dend_disc_to_cont <- function(dend) {
+  if (is.dendrogram(dend)) dend <- as.ggdend(dend)
+  x <- trunc(dend$segments$x)
+  xend <- trunc(dend$segments$xend)
+  dend$segments$x <- dend$labels[x, "label"]
+  dend$segments$xend <- dend$labels[xend, "label"]
+  dend
+}
+
 plotly_dend <- function(dend, side = c("row", "col"), flip = FALSE) {
   side <- match.arg(side)
   dend_data <- as.ggdend(dend)
   segs <- dend_data$segments
+  
+
   ## Have to get colors back from dendrogram otherwise plotly will make some up
   if (is.null(segs$col) || all(is.na(segs$col))) {
     segs$col <- rep(1, length(segs$col))
