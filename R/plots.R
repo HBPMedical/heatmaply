@@ -225,8 +225,8 @@ k_colors <- function(k) {
 
 dend_cont_to_disc <- function(dend) {
   if (is.dendrogram(dend)) dend <- as.ggdend(dend)
-  x <- trunc(dend$segments$x)
-  xend <- trunc(dend$segments$xend)
+  x <- round(dend$segments$x)
+  xend <- round(dend$segments$xend)
   dend$segments$x <- dend$labels[x, "label"]
   dend$segments$xend <- dend$labels[xend, "label"]
   dend
