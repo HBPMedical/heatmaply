@@ -904,17 +904,16 @@ heatmaply.heatmapr <- function(x,
   } else {
     if (plot_method == "ggplot") {
       col_ggdend <- as.ggdend(cols)
-      col_ggdend <- dend_disc_to_cont(col_ggdend)
+      # col_ggdend <- dend_cont_to_disc(col_ggdend)
 
-      # xlims <- c(0.5, nrow(col_ggdend$labels) + 0.5)
+      xlims <- c(0.5, nrow(col_ggdend$labels) + 0.5)
 
-      py <- ggplot(cols, labels  = FALSE, nodes=FALSE) + theme_bw() +
-        coord_cartesian(expand = FALSE
-        	# , xlim = xlims
+      py <- ggplot(cols, labels  = FALSE) + theme_bw() +
+        coord_cartesian(expand = FALSE, xlim = xlims
         	) +
         theme_clear_grid_dends
     } else {
-      suppressWarnings(      py <- plotly_dend(cols, side = "col"))
+      suppressWarnings(py <- plotly_dend(cols, side = "col"))
     }
   }
   if (is.null(rows)) {
@@ -922,13 +921,12 @@ heatmaply.heatmapr <- function(x,
   } else {
     if (plot_method == "ggplot") {
       row_ggdend <- as.ggdend(rows)
-  		row_ggdend <- dend_disc_to_cont(row_ggdend)
+  		# row_ggdend <- dend_cont_to_disc(row_ggdend)
       
-      # ylims <- c(0.5, nrow(row_ggdend$labels) + 0.5)
+      ylims <- c(0.5, nrow(row_ggdend$labels) + 0.5)
 
-      px <- ggplot(row_ggdend, labels  = FALSE, nodes=FALSE) +
-        coord_flip(expand = FALSE
-        	# , xlim = ylims
+      px <- ggplot(row_ggdend, labels = FALSE) +
+        coord_flip(expand = FALSE, xlim = ylims
         	) +
         theme_bw() +
         theme_clear_grid_dends
@@ -1092,7 +1090,9 @@ heatmaply.heatmapr <- function(x,
       # layout(yaxis = list(tickmode='auto'),
       #        xaxis = list(tickmode='auto'))
   }
-
+	p <- p %>% layout(
+		yaxis = list(tickmode='auto'),
+    xaxis = list(tickmode='auto'))
 
 
   heatmap_subplot <- heatmap_subplot_from_ggplotly(p = p, px = px, py = py,

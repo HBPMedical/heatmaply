@@ -132,24 +132,26 @@ plotly_heatmap <- function(x, limits = range(x), colors = viridis(n=256, alpha =
 
   if (is.function(colors)) colors <- colors(256)
 
-  p <- plot_ly(z = x, x = 1:ncol(x), y = 1:nrow(x),
+  p <- plot_ly(z = x, 
+    # x = 1:ncol(x), y = 1:nrow(x),
     type = "heatmap", showlegend = FALSE, colors = colors,
     zmin = limits[1], zmax = limits[2]) %>%
       layout(
         xaxis = list(
           tickfont = list(size = fontsize_col),
           tickangle = column_text_angle,
-          tickvals = 1:ncol(x), ticktext = colnames(x),
+          # tickvals = 1:ncol(x), ticktext = colnames(x),
           linecolor = "#ffffff",
-          range = c(0.5, ncol(x) + 0.5),
+          range = c(-0.5, ncol(x)),
+          range = c(0, ncol(x)),
           showticklabels = TRUE
         ),
         yaxis = list(
           tickfont = list(size = fontsize_row),
           tickangle = row_text_angle,
-          tickvals = 1:nrow(x), ticktext = rownames(x),
+          # tickvals = 1:nrow(x), ticktext = rownames(x),
           linecolor = "#ffffff",
-          range = c(0.5, nrow(x) + 0.5),
+          range = c(-0.5, nrow(x)),
           showticklabels = TRUE
         )
       )
@@ -221,7 +223,7 @@ k_colors <- function(k) {
   }
 }
 
-dend_disc_to_cont <- function(dend) {
+dend_cont_to_disc <- function(dend) {
   if (is.dendrogram(dend)) dend <- as.ggdend(dend)
   x <- trunc(dend$segments$x)
   xend <- trunc(dend$segments$xend)
@@ -232,8 +234,9 @@ dend_disc_to_cont <- function(dend) {
 
 plotly_dend <- function(dend, side = c("row", "col"), flip = FALSE) {
   side <- match.arg(side)
-  dend_data <- as.ggdend(dend)
-  segs <- dend_data$segments
+  dend <- as.ggdend(dend)
+  dend <- dend_cont_to_disc(dend)
+  segs <- dend$segments
   
 
   ## Have to get colors back from dendrogram otherwise plotly will make some up
@@ -252,7 +255,7 @@ plotly_dend <- function(dend, side = c("row", "col"), flip = FALSE) {
   # if (is.null(colors)) colors <- "black"
 
 
-  lab_max <- nrow(dend_data$labels)
+  lab_max <- nrow(dend$labels)
   if (side == "row") lab_max <- lab_max + 0.5
 
   axis1 <- list(
