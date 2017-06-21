@@ -1,5 +1,6 @@
 ## This script downloads the expression data for all breast cancer samples
-## from GDC/TCGA, and filters them to have only the 
+## from GDC/TCGA, and filters them to have only the genes in the 
+## PAM50 gene set
 
 library("TCGAbiolinks")
 library('biomaRt')

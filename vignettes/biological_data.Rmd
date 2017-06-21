@@ -38,19 +38,23 @@ Required packages
 
 ```{r}
 library("DESeq2")
-suppressPackageStartupMessages(library("TCGAbiolinks"))
-library("SummarizedExperiment")
-{r}
+```
 
 
 
 heatmaply workflow
 ==================
+```{r}
 cor_mat <- cor(tcga_pam50_expression)
 dimnames(cor_mat) <- NULL
+
 
 heatmaply(cor_mat, 
     plot_method = "plotly",
     col_side_colors=tcga_brca_clinical)
+```
 
-heatmaply(cor(t(tcga_pam50_expression)))
+rlog explanation
+
+```{r}
+rlogged <- rlog(tcga_pam50_expression)
