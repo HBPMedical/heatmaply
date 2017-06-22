@@ -244,6 +244,11 @@ is.plotly <- function(x) {
 #' This option should be used when working with medium to large matrix size as it
 #' makes the heatmap much faster (and the hover still works).
 #'
+#' @param dynamicTicks (defalut: FALSE). passed to \link[plotly]{ggplotly}:
+#' should plotly.js dynamically generate axis tick labels?
+#' Dynamic ticks are useful for updating ticks in response to zoom/pan interactions; however,
+#' they can not always reproduce labels as they would appear in the static ggplot2 image.
+#'
 #' @export
 #' @examples
 #' \dontrun{
@@ -476,9 +481,9 @@ heatmaply.default <- function(x,
                               key.title = NULL,
                               return_ppxpy = FALSE,
                               row_side_colors,
-                              row_side_palette,
+                              row_side_palette = NULL,
                               col_side_colors,
-                              col_side_palette,
+                              col_side_palette = NULL,
                               ColSideColors = NULL,
                               RowSideColors = NULL,
                               seriate = c("OLO", "mean", "none", "GW"),
@@ -499,6 +504,8 @@ heatmaply.default <- function(x,
                               colorbar_xpos = if(row_dend_left) -0.1 else 1.1,
                               colorbar_ypos = 0,
                               showticklabels = c(TRUE, TRUE),
+                              dynamicTicks = FALSE,
+
                               col) {
 
   if (!missing(long_data)) {
@@ -570,9 +577,9 @@ heatmaply.default <- function(x,
   # TODO: add a parameter to control removing of non-numeric columns without moving them to row_side_colors
   if (!all(ss_c_numeric)) {
     row_side_colors <- if (missing(row_side_colors)) {
-      data.frame(x[, !ss_c_numeric, drop= FALSE])
+      data.frame(x[, !ss_c_numeric, drop = FALSE])
     } else {
-      data.frame(row_side_colors, x[, !ss_c_numeric, drop= FALSE])
+      data.frame(row_side_colors, x[, !ss_c_numeric, drop = FALSE])
     }
     x <- x[, ss_c_numeric]
   }
@@ -657,7 +664,8 @@ heatmaply.default <- function(x,
                      colorbar_yanchor = colorbar_yanchor,
                      colorbar_xpos = colorbar_xpos,
                      colorbar_ypos = colorbar_ypos,
-                     showticklabels = showticklabels
+                     showticklabels = showticklabels,
+                     dynamicTicks = dynamicTicks
                      )
 
                      # TODO: think more on what should be passed in "..."
@@ -828,9 +836,9 @@ heatmaply.heatmapr <- function(x,
                                cellnote_color = "auto",
                                cellnote_textposition = "middle right",
                                row_side_colors,
-                               row_side_palette,
+                               row_side_palette = NULL,
                                col_side_colors,
-                               col_side_palette,
+                               col_side_palette = NULL,
                                plot_method = c("ggplot", "plotly"),
                                ColSideColors,
                                RowSideColors,
@@ -846,7 +854,8 @@ heatmaply.heatmapr <- function(x,
                                colorbar_xpos = if(row_dend_left) -0.1 else 1.1,
                                colorbar_ypos = 0,
                                colorbar_len = 0.3,
-                               showticklabels = c(TRUE, TRUE)
+                               showticklabels = c(TRUE, TRUE),
+                               dynamicTicks = FALSE
                                ) {
 
   plot_method <- match.arg(plot_method)
@@ -972,10 +981,19 @@ heatmaply.heatmapr <- function(x,
       nrow(side_color_df) == nrow(data_mat),
       is.data.frame(side_color_df)
     )
-    pr <- side_color_plot(x[["row_side_colors"]], type = "row",
-      text_angle = column_text_angle,
-      palette = row_side_palette,
-      is_colors = !is.null(RowSideColors), label_name = label_names[[1]])
+    ## Just make sure it's character first
+    side_color_df[] <- lapply(side_color_df, as.character)
+    if (plot_method == "ggplot") {
+      pr <- ggplot_side_color_plot(side_color_df, type = "row",
+        text_angle = column_text_angle,
+        palette = row_side_palette,
+        is_colors = !is.null(RowSideColors), label_name = label_names[[1]])
+    } else {
+      pr <- plotly_side_color_plot(side_color_df, type = "row",
+        text_angle = column_text_angle,
+        palette = row_side_palette,
+        label_name = label_names[[1]])
+    }
   }
 
   if (missing(col_side_colors)) {
@@ -991,12 +1009,20 @@ heatmaply.heatmapr <- function(x,
     )
     ## Just make sure it's character first
     side_color_df[] <- lapply(side_color_df, as.character)
-    pc <- side_color_plot(side_color_df, type = "column",
-      text_angle = row_text_angle,
-      palette = col_side_palette,
-      is_colors = !is.null(ColSideColors),
-      label_name = label_names[[2]]
-    )
+    if (plot_method == "ggplot") {
+      pc <- ggplot_side_color_plot(side_color_df, type = "column",
+        text_angle = row_text_angle,
+        palette = col_side_palette,
+        is_colors = !is.null(ColSideColors),
+        label_name = label_names[[2]]
+      )
+    } else {
+      pc <- plotly_side_color_plot(side_color_df, type = "column",
+        text_angle = row_text_angle,
+        palette = col_side_palette,
+        label_name = label_names[[2]]
+      )
+    }
   }
 
   if (return_ppxpy) {
@@ -1005,13 +1031,13 @@ heatmaply.heatmapr <- function(x,
 
   ## plotly:
   # turn p, px, and py to plotly objects if necessary
-  if (!is.plotly(p)) p <- ggplotly(p) %>% layout(showlegend=FALSE)
+  if (!is.plotly(p)) p <- ggplotly(p, dynamicTicks = dynamicTicks) %>% layout(showlegend=FALSE)
 	if (!is.null(px) && !is.plotly(px)) {
-	  px <- ggplotly(px, tooltip = "y") %>%
+	  px <- ggplotly(px, tooltip = "y", dynamicTicks = dynamicTicks) %>%
 	    layout(showlegend=FALSE)
 	}
 	if (!is.null(py) && !is.plotly(py)) {
-	  py <- ggplotly(py, tooltip = "y") %>%
+	  py <- ggplotly(py, tooltip = "y", dynamicTicks = dynamicTicks) %>%
 	    layout(showlegend=FALSE)
 	}
 
@@ -1036,7 +1062,6 @@ heatmaply.heatmapr <- function(x,
         textfont = list(color = plotly::toRGB(cellnote_color), size = 12)
       )
   }
-
 
   # https://plot.ly/r/reference/#Layout_and_layout_style_objects
   p <- layout(p,              # all of layout's properties: /r/reference/#layout
@@ -1116,68 +1141,6 @@ heatmaply.heatmapr <- function(x,
 calc_margin <- function(labels, fontsize) {
     max(nchar(labels) * fontsize, na.rm = TRUE) * 0.6
   # http://stackoverflow.com/questions/19113725/what-dependency-between-font-size-and-width-of-char-in-monospace-font
-
 }
 
 
-
-
-## Predict luminosity of cells and change text based on that
-predict_colors <- function(p, plot_method) {
-
-  ## http://stackoverflow.com/questions/12043187/how-to-check-if-hex-color-is-too-black
-  colorscale_df <- p$x$data[[1]]$colorscale
-  cell_values <- as.data.frame(p$x$data[[1]]$z)
-  cell_values$row <- 1:nrow(cell_values)
-  cell_values_m <- reshape2::melt(cell_values, id.vars = "row")
-  cell_values_vector <- cell_values_m$value
-  ## Need to normalise to (0, 1) scale as this is what plotly
-  ## uses internally
-  if (plot_method == "plotly") {
-    ## Need to convert plotly colors to hex colors
-    colorscale_df[, 2] <- parse_plotly_color(colorscale_df[, 2])
-
-    cell_values_vector <- normalize(as.numeric(cell_values_vector))
-    ## interpolate to 256 colors because that's probably enough
-    colorscale_df <- data.frame(
-      stats::approx(as.numeric(colorscale_df[, 1]), n = 256)$y,
-      grDevices::colorRampPalette(colorscale_df[, 2])(256)
-    )
-
-    ## Then need to sort, find nearest neighbour, and map across
-    cell_values_vector_sort <- sort(cell_values_vector)
-    nearest_neighbours <- sapply(cell_values_vector_sort,
-      function(val) {
-        max(colorscale_df[as.numeric(colorscale_df[, 1]) <= val, 1])
-      }
-    )
-    names(nearest_neighbours) <- cell_values_vector_sort
-    cell_values_vector <- nearest_neighbours[as.character(cell_values_vector)]
-  }
-
-  cell_values_vector <- as.character(cell_values_vector)
-  ind <- match(cell_values_vector, colorscale_df[, 1])
-  cell_colors <- unlist(colorscale_df[ind, 2])
-  cell_colors_rgb <- colorspace::hex2RGB(cell_colors)
-  cell_font_colors <- sapply(seq_len(nrow(cell_colors_rgb@coords)),
-    function(i) {
-      col <- cell_colors_rgb@coords[i, ]
-      luma <- (0.2126 * col[1]) +
-        (0.7152 * col[2]) +
-        (0.0722 * col[3])
-      ifelse (luma < 0.4, "white", "black")
-    }
-  )
-  cell_font_colors
-}
-
-
-parse_plotly_color <- function(color) {
-  r <- gsub("rgb[a]?\\((\\d+),(\\d+),(\\d+),\\d+)",
-    "\\1", color)
-  g <- gsub("rgb[a]?\\((\\d+),(\\d+),(\\d+),\\d+)",
-    "\\2", color)
-  b <- gsub("rgb[a]?\\((\\d+),(\\d+),(\\d+),\\d+)",
-    "\\3", color)
-  rgb(r, g, b, maxColorValue = 255)
-}
