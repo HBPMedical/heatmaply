@@ -3,6 +3,8 @@
 ## PAM50 gene set
 
 library("TCGAbiolinks")
+library("SummarizedExperiment")
+
 library('biomaRt')
 
 
@@ -114,8 +116,11 @@ tcga_brca_clinical[, stypes] <- lapply(tcga_brca_clinical[, stypes],
 
 
 tcga_brca_clinical <- as.data.frame(tcga_brca_clinical)
-tcga_pam50_expression <- assay(data, "HTSeq - Counts")[pam50_genes, ]
+expression <- assay(data, "HTSeq - Counts")
+expression <- expression[!duplicated(rownames(expression)), ]
+voomed_pam50_expression <- as.matrix(voom(expression))[pam50_genes, ]
+raw_pam50_expression <- expression[pam50_genes, ]
 
-
-devtools::use_data(tcga_pam50_expression, overwrite = TRUE)
+devtools::use_data(voomed_pam50_expression, overwrite = TRUE)
+devtools::use_data(raw_pam50_expression, overwrite = TRUE)
 devtools::use_data(tcga_brca_clinical, overwrite = TRUE)

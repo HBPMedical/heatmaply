@@ -51,7 +51,6 @@ heatmaply(cor_mat,
 
 ```
 
-
 ```{r}
 cor_mat <- cor(log2(raw_pam50_expression + 0.5))
 dimnames(cor_mat) <- NULL
@@ -75,20 +74,6 @@ dimnames(cor_mat) <- NULL
 heatmaply(cor_mat, 
     main = "log2 cpm data correlation",
     plot_method = "plotly",
-    col_side_colors=tcga_brca_clinical)
-
-
-
-heatmaply(
-    log2(raw_pam50_expression + 0.5) - rowMedians(log2(raw_pam50_expression + 0.5)),
-    col_side_colors=tcga_brca_clinical)
-
-
-heatmaply(voomed_pam50_expression - rowMedians(voomed_pam50_expression),
-    col_side_colors=tcga_brca_clinical)
-
-    
-heatmaply(voomed_pam50_expression, scale = "row",
     col_side_colors=tcga_brca_clinical)
 
 ```

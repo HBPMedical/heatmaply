@@ -577,9 +577,9 @@ heatmaply.default <- function(x,
   # TODO: add a parameter to control removing of non-numeric columns without moving them to row_side_colors
   if (!all(ss_c_numeric)) {
     row_side_colors <- if (missing(row_side_colors)) {
-      data.frame(x[, !ss_c_numeric, drop= FALSE])
+      data.frame(x[, !ss_c_numeric, drop = FALSE])
     } else {
-      data.frame(row_side_colors, x[, !ss_c_numeric, drop= FALSE])
+      data.frame(row_side_colors, x[, !ss_c_numeric, drop = FALSE])
     }
     x <- x[, ss_c_numeric]
   }

@@ -124,11 +124,11 @@ ggplot_heatmap <- function(xx,
 }
 
 
-plotly_heatmap <- function(x, limits = range(x), colors = viridis(n=256, alpha = 1, begin = 0,
-                                                                  end = 1, option = "viridis"),
-    row_text_angle = 0, column_text_angle = 45, grid.color, grid.size, key.title = NULL,
-    row_dend_left = FALSE, fontsize_row = 10, fontsize_col = 10, colorbar_xanchor = "left",
-    key_title = "", colorbar_yanchor = "bottom", colorbar_xpos = 1.1, colorbar_ypos = 1, colorbar_len = 0.3) {
+plotly_heatmap <- function(x, limits = range(x), 
+    colors = viridis(n=256, alpha = 1, begin = 0, end = 1, option = "viridis"),
+    row_text_angle = 0, column_text_angle = 45, grid.color, grid.size, 
+    key.title = NULL, row_dend_left = FALSE, fontsize_row = 10, fontsize_col = 10, 
+    key_title = "", colorbar_xanchor = "left", colorbar_yanchor = "bottom", colorbar_xpos = 1.1, colorbar_ypos = 1, colorbar_len = 0.3) {
 
   if (is.function(colors)) colors <- colors(256)
 
