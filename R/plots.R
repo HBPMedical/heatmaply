@@ -39,9 +39,10 @@ ggplot_heatmap <- function(xx,
                            row_text_angle = 0,
                            column_text_angle = 45,
                            scale_fill_gradient_fun =
-                             scale_fill_gradientn(colors = viridis(n=256, alpha = 1, begin = 0,
-                                                                   end = 1, option = "viridis"),
-                                                  na.value = "grey50", limits = NULL),
+                             scale_fill_gradientn(
+                              colors = viridis(n=256, alpha = 1, begin = 0,
+                                end = 1, option = "viridis"),
+                              na.value = "grey50", limits = NULL),
                            grid_color = NA,
                            grid_size = 0.1,
                            key.title = NULL,
@@ -58,7 +59,8 @@ ggplot_heatmap <- function(xx,
                                     panel.background = element_blank())
   # heatmap
   # xx <- x$matrix$data
-  if(!is.data.frame(xx)) df <- as.data.frame(xx)
+  # if(!is.data.frame(xx)) 
+  df <- as.data.frame(xx)
 
   if (missing(label_names)) {
     if (is.null(dim_names <- names(dimnames(xx)))) {
@@ -96,7 +98,7 @@ ggplot_heatmap <- function(xx,
     # scale_fill_viridis() +
     coord_cartesian(expand = FALSE) +
     scale_fill_gradient_fun +
-    theme_bw()+ theme_clear_grid_heatmap +
+    theme_bw() + theme_clear_grid_heatmap +
     theme(axis.text.x = element_text(angle = column_text_angle,
             size = fontsize_col, hjust = 1),
           axis.text.y = element_text(angle = row_text_angle,
@@ -113,12 +115,15 @@ ggplot_heatmap <- function(xx,
   # until this bug is fixed: https://github.com/ropensci/plotly/issues/699
   # we are forced to use geom_hline and geom_vline
   if(!is.na(grid_color)) {
-    p <- p + geom_hline(yintercept =c(0:nrow(xx))+.5, color = grid_color) # , size = grid_size # not implemented since it doesn't work with plotly
-    p <- p + geom_vline(xintercept =c(0:ncol(xx))+.5, color = grid_color) # , size = grid_size # not implemented since it doesn't work with plotly
+    p <- p + geom_hline(yintercept = c(0:nrow(xx)) + 0.5, color = grid_color) # , size = grid_size # not implemented since it doesn't work with plotly
+    p <- p + geom_vline(xintercept = c(0:ncol(xx)) + 0.5, color = grid_color) # , size = grid_size # not implemented since it doesn't work with plotly
 
   }
 
-  if(row_dend_left) p <- p + scale_y_discrete(position = "right") # possible as of ggplot 2.1.0 !
+  if(row_dend_left) {
+    # possible as of ggplot 2.1.0 !
+    p <- p + scale_y_discrete(position = "right")
+  }
 
   p
 }
@@ -127,42 +132,50 @@ ggplot_heatmap <- function(xx,
 plotly_heatmap <- function(x, limits = range(x), 
     colors = viridis(n=256, alpha = 1, begin = 0, end = 1, option = "viridis"),
     row_text_angle = 0, column_text_angle = 45, grid.color, grid.size, 
-    key.title = NULL, row_dend_left = FALSE, fontsize_row = 10, fontsize_col = 10, 
-    key_title = "", colorbar_xanchor = "left", colorbar_yanchor = "bottom", colorbar_xpos = 1.1, colorbar_ypos = 1, colorbar_len = 0.3) {
+    row_dend_left = FALSE, fontsize_row = 10, fontsize_col = 10, key_title = "", 
+    colorbar_xanchor = "left", colorbar_yanchor = "bottom", 
+    colorbar_xpos = 1.1, colorbar_ypos = 1, colorbar_len = 0.3, 
+    dynamicTicks = FALSE) {
 
   if (is.function(colors)) colors <- colors(256)
 
+  xaxis_list <- list(
+    tickfont = list(size = fontsize_col),
+    tickangle = column_text_angle,
+    linecolor = "#ffffff",
+    range = c(-0.5, ncol(x)),
+    range = c(0, ncol(x)),
+    showticklabels = TRUE
+  )
+  yaxis_list <- list(
+    tickfont = list(size = fontsize_row),
+    tickangle = row_text_angle,
+    linecolor = "#ffffff",
+    range = c(-0.5, nrow(x)),
+    showticklabels = TRUE
+  )
+  if (dynamicTicks) {
+    xcoords <- colnames(x)
+    ycoords <- rownames(x)
+  } else {
+    xaxis_list[["tickvals"]] <- xcoords <- seq_len(ncol(x))
+    xaxis_list[["ticktext"]] <- colnames(x)
+    yaxis_list[["tickvals"]] <- ycoords <- seq_len(nrow(x))
+    yaxis_list[["ticktext"]] <- rownames(x)
+  }
+
   p <- plot_ly(z = x, 
-    # x = 1:ncol(x), y = 1:nrow(x),
+    x = xcoords, y = ycoords,
     type = "heatmap", showlegend = FALSE, colors = colors,
     zmin = limits[1], zmax = limits[2]) %>%
-      layout(
-        xaxis = list(
-          tickfont = list(size = fontsize_col),
-          tickangle = column_text_angle,
-          # tickvals = 1:ncol(x), ticktext = colnames(x),
-          linecolor = "#ffffff",
-          range = c(-0.5, ncol(x)),
-          range = c(0, ncol(x)),
-          showticklabels = TRUE
-        ),
-        yaxis = list(
-          tickfont = list(size = fontsize_row),
-          tickangle = row_text_angle,
-          # tickvals = 1:nrow(x), ticktext = rownames(x),
-          linecolor = "#ffffff",
-          range = c(-0.5, nrow(x)),
-          showticklabels = TRUE
-        )
-      )
+      layout(xaxis = xaxis_list, yaxis = yaxis_list)
+
   p <- plotly::colorbar(p, lenmode = "fraction", title = key_title,
     xanchor = colorbar_xanchor, x = colorbar_xpos, y = colorbar_ypos,
     yanchor = colorbar_yanchor, len = colorbar_len)
+  
   p
 }
-
-
-<<<<<<< HEAD
 
 
 
@@ -226,19 +239,21 @@ k_colors <- function(k) {
 
 dend_cont_to_disc <- function(dend) {
   if (is.dendrogram(dend)) dend <- as.ggdend(dend)
-  x <- round(dend$segments$x)
-  xend <- round(dend$segments$xend)
-  dend$segments$x <- dend$labels[x, "label"]
-  dend$segments$xend <- dend$labels[xend, "label"]
+  x <- round(dend[["segments"]][["x"]])
+  xend <- round(dend[["segments"]][["xend"]])
+  dend[["segments"]][["x"]] <- dend$labels[x, "label"]
+  # dend[["segments"]][["x"]] <- factor(dend$segments$x, 
+  #   levels=unique(dend[["segments"]][["x"]]))
+  dend[["segments"]][["xend"]] <- dend[["labels"]][xend, "label"]
+  # dend[["segments"]][["xend"]] <- factor(dend[["segments"]][["xend"]], 
+  #   levels=unique(dend[["segments"]][["xend"]]))
   dend
 }
 
-=======
->>>>>>> plotly_sides
 plotly_dend <- function(dend, side = c("row", "col"), flip = FALSE) {
   side <- match.arg(side)
-  dend <- as.ggdend(dend)
-  dend <- dend_cont_to_disc(dend)
+  if (!inherits(dend, "ggdend")) dend <- as.ggdend(dend)
+  # dend <- dend_cont_to_disc(dend)
   segs <- dend$segments
   
 
@@ -467,56 +482,6 @@ parse_plotly_color <- function(color) {
   rgb(r, g, b, maxColorValue = 255)
 }
 
-
-
-# # Create a plotly colorscale from a list of colors in any format.
-# # Probably not needed currently
-# make_colorscale <- function(colors) {
-#     seq <- seq(0, 1, by = 1 / length(colors))
-#     scale <- list(
-#         sapply(seq_along(colors),
-#           function(i) {
-#             if (i == 1) {
-#                 0
-#             } else if (i == length(colors)) {
-#                 1
-#             } else {
-#                 seq[i]
-#             }
-#           }
-#         ),
-#         col2plotlyrgb(colors)
-#     )
-#     scale
-# }
-
-# #' @title Color to RGB Text
-# #' @description
-# #' Plotly takes colors in this format "rgb(255, 0, 0)"
-# #'
-# #' @param col vector of any of the three kinds of R color specifications,
-# #' i.e., either a color name (as listed by colors()),
-# #' a hexadecimal string of the form "#rrggbb" or "#rrggbbaa" (see rgb),
-# #' or a positive integer i meaning palette()[i].
-# #'
-# #' @return
-# #' A character of the form "rgb(value1,value1,value3)"
-# #'
-# #' @seealso \link{col2rgb}
-# #' @examples
-# #' \dontrun{
-# #' col2rgb("peachpuff")
-# #' col2plotlyrgb("peachpuff")
-# #' }
-# col2plotlyrgb <- function(col) {
-#     rgb <- grDevices::col2rgb(col)
-#     paste0(
-#       "rgb(",
-#       rgb["red", ], ",",
-#       rgb["green", ], ",",
-#       rgb["blue", ], ")"
-#     )
-# }
 
 ## Helper function to generate "normal" colors for dendrograms
 ## ie black if one k or rainbow_hcl otherwise

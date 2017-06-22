@@ -505,9 +505,13 @@ heatmaply.default <- function(x,
                               colorbar_ypos = 0,
                               showticklabels = c(TRUE, TRUE),
                               dynamicTicks = FALSE,
-
                               col) {
-
+  if (dynamicTicks) {
+    message(
+      paste("dendrogram x co-ordinates are altered to allow dynamicTicks to work.\n",
+        "This does not affect the distances shown.")
+    )
+  }
   if (!missing(long_data)) {
     if (!missing(x)) warning("x and long_data should not be used together")
     assert_that(
@@ -911,37 +915,38 @@ heatmaply.heatmapr <- function(x,
   if (is.null(cols)) {
     py <- NULL
   } else {
-    if (plot_method == "ggplot") {
-      col_ggdend <- as.ggdend(cols)
-      # col_ggdend <- dend_cont_to_disc(col_ggdend)
+    col_ggdend <- as.ggdend(cols)
+    if (dynamicTicks) col_ggdend <- dend_cont_to_disc(col_ggdend)
 
+    if (plot_method == "ggplot") {
+      
       xlims <- c(0.5, nrow(col_ggdend$labels) + 0.5)
 
-      py <- ggplot(cols, labels  = FALSE) + theme_bw() +
-        coord_cartesian(expand = FALSE, xlim = xlims
-        	) +
+      py <- ggplot(col_ggdend, labels = FALSE) + theme_bw() +
+        coord_cartesian(expand = FALSE, xlim = xlims) +
         theme_clear_grid_dends
     } else {
-      suppressWarnings(py <- plotly_dend(cols, side = "col"))
+      suppressWarnings(py <- plotly_dend(col_ggdend, side = "col"))
     }
   }
   if (is.null(rows)) {
     px <- NULL
   } else {
+    row_ggdend <- as.ggdend(rows)
+		if (dynamicTicks) row_ggdend <- dend_cont_to_disc(row_ggdend)
+
     if (plot_method == "ggplot") {
-      row_ggdend <- as.ggdend(rows)
-  		# row_ggdend <- dend_cont_to_disc(row_ggdend)
-      
+
       ylims <- c(0.5, nrow(row_ggdend$labels) + 0.5)
 
-      px <- ggplot(row_ggdend, labels = FALSE) +
+      px <- ggplot(row_ggdend, labels = FALSE, nodes = FALSE) +
         coord_flip(expand = FALSE, xlim = ylims
         	) +
         theme_bw() +
         theme_clear_grid_dends
       if (row_dend_left) px <- px + scale_y_reverse()
     } else {
-      px <- plotly_dend(rows, flip = row_dend_left, side = "row")
+      px <- plotly_dend(row_ggdend, flip = row_dend_left, side = "row")
     }
   }
   # create the heatmap
@@ -957,11 +962,12 @@ heatmaply.heatmapr <- function(x,
                       layers = heatmap_layers,
                       row_dend_left = row_dend_left,
                       label_names = label_names,
+                      dynamicTicks = dynamicTicks,
                       fontsize_row = fontsize_row, fontsize_col = fontsize_col)
   } else if (plot_method == "plotly") {
 
     p <- plotly_heatmap(data_mat, limits = limits, colors = colors,
-      key_title = key.title,
+      key_title = key.title, dynamicTicks = dynamicTicks,
       row_text_angle = row_text_angle, column_text_angle = column_text_angle,
       fontsize_row = fontsize_row, fontsize_col = fontsize_col,
       colorbar_yanchor = colorbar_yanchor, colorbar_xanchor = colorbar_xanchor,
@@ -1031,17 +1037,17 @@ heatmaply.heatmapr <- function(x,
 
   ## plotly:
   # turn p, px, and py to plotly objects if necessary
-  if (!is.plotly(p)) p <- ggplotly(p, dynamicTicks = dynamicTicks) %>% layout(showlegend=FALSE)
+  if (!is.plotly(p)) p <- ggplotly(p, dynamicTicks = dynamicTicks
+    ) %>% layout(showlegend=FALSE)
 	if (!is.null(px) && !is.plotly(px)) {
-	  px <- ggplotly(px, tooltip = "y", dynamicTicks = dynamicTicks) %>%
+	  px <- ggplotly(px, tooltip = "y") %>%
 	    layout(showlegend=FALSE)
 	}
 	if (!is.null(py) && !is.plotly(py)) {
-	  py <- ggplotly(py, tooltip = "y", dynamicTicks = dynamicTicks) %>%
+	  py <- ggplotly(py, tooltip = "y") %>%
 	    layout(showlegend=FALSE)
 	}
-
-
+  
   if (draw_cellnote) {
     ## Predict cell color luminosity based on colorscale
     if (cellnote_color == "auto") {
@@ -1118,7 +1124,6 @@ heatmaply.heatmapr <- function(x,
 	p <- p %>% layout(
 		yaxis = list(tickmode='auto'),
     xaxis = list(tickmode='auto'))
-
 
   heatmap_subplot <- heatmap_subplot_from_ggplotly(p = p, px = px, py = py,
     row_dend_left = row_dend_left, subplot_margin = subplot_margin,
