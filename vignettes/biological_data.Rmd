@@ -80,11 +80,11 @@ heatmaply(cor_mat,
 
 
 heatmaply(
-    log2(raw_pam50_expression + 0.5) - rowMedians(log2(raw_pam50_expression + 0.5)),
+    log2(raw_pam50_expression + 0.5) - apply(log2(raw_pam50_expression + 0.5), 1, median),
     col_side_colors=tcga_brca_clinical)
 
 
-heatmaply(voomed_pam50_expression - rowMedians(voomed_pam50_expression),
+heatmaply(voomed_pam50_expression - apply(voomed_pam50_expression, 1, median),
     col_side_colors=tcga_brca_clinical)
 
     
