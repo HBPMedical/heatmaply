@@ -923,7 +923,7 @@ heatmaply.heatmapr <- function(x,
       xlims <- c(0.5, nrow(col_ggdend$labels) + 0.5)
 
       py <- ggplot(col_ggdend, labels = FALSE) + theme_bw() +
-        coord_cartesian(expand = FALSE, xlim = xlims) +
+        # coord_cartesian(expand = FALSE, xlim = xlims) +
         theme_clear_grid_dends
     } else {
       suppressWarnings(py <- plotly_dend(col_ggdend, side = "col"))
@@ -940,8 +940,9 @@ heatmaply.heatmapr <- function(x,
       ylims <- c(0.5, nrow(row_ggdend$labels) + 0.5)
 
       px <- ggplot(row_ggdend, labels = FALSE, nodes = FALSE) +
-        coord_flip(expand = FALSE, xlim = ylims
-        	) +
+        coord_flip(expand = FALSE
+            # , xlim = ylims
+            ) +
         theme_bw() +
         theme_clear_grid_dends
       if (row_dend_left) px <- px + scale_y_reverse()
