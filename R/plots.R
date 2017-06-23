@@ -295,7 +295,7 @@ plotly_dend <- function(dend, side = c("row", "col"), flip = FALSE) {
       p %>% add_segments(x = ~y, xend = ~yend, y = ~x, yend = ~xend, color = ~col,
         showlegend = FALSE,
         colors = colors,
-        hoverinfo = "x"
+        hoverinfo = "x+y"
         ) %>%
       layout(
         hovermode = "closest",
@@ -309,7 +309,7 @@ plotly_dend <- function(dend, side = c("row", "col"), flip = FALSE) {
       p %>% add_segments(x = ~x, xend = ~xend, y = ~y, yend = ~yend, color = ~col,
         showlegend = FALSE,
         colors = colors,
-        hoverinfo = "y"
+        hoverinfo = "x+y"
       ) %>%
       layout(
         hovermode = "closest",
