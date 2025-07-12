@@ -95,10 +95,10 @@ cool_warm(n)
 A character vector of color names.
 }
 \description{
-Functions for getting the colors of RColorBrewer (i.e.: \link{brewer.pal}) without the limitation of only 9/11
+Functions for getting the colors of RColorBrewer (i.e.: \link[RColorBrewer]{brewer.pal}) without the limitation of only 9/11
 color values, based on \link{colorRampPalette}.
 
-For sequential palettes this is not essential since we have \link{viridis}. But for diverging palettes
+For sequential palettes this is not essential since we have \link[viridis]{viridis}. But for diverging palettes
 this is quit essential.
 
 The sequential palettes names are
@@ -113,17 +113,21 @@ It goes from blue (cool) to ref (warm), based on well thought-out design element
 \dontrun{
 
 library(RColorBrewer)
-display.brewer.all(n=11,type="div"); title(main = "Divergent color palette")
-display.brewer.all(n=9,type=c("seq")); title(main = "Sequential color palette")
+display.brewer.all(n = 11, type = "div")
+title(main = "Divergent color palette")
+display.brewer.all(n = 9, type = c("seq"))
+title(main = "Sequential color palette")
 
 
 
 img <- function(obj, nam) {
-  image(1:length(obj), 1, as.matrix(1:length(obj)), col=obj,
-        main = nam, ylab = "", xaxt = "n", yaxt = "n",  bty = "n")
+  image(1:length(obj), 1, as.matrix(1:length(obj)),
+    col = obj,
+    main = nam, ylab = "", xaxt = "n", yaxt = "n", bty = "n"
+  )
 }
 
-par(mfrow = c(10,1))
+par(mfrow = c(10, 1))
 img(rev(cool_warm(500)), "cool_warm, (Moreland 2009)")
 img(RdBu(500), "RdBu")
 img(BrBG(500), "BrBG")
@@ -137,9 +141,8 @@ img(Spectral(500), "Spectral")
 
 
 library(heatmaply)
-heatmaply(cor(mtcars), colors = PiYG, limits = c(-1,1))
-heatmaply(cor(mtcars), colors = RdBu, limits = c(-1,1))
-
+heatmaply(cor(mtcars), colors = PiYG, limits = c(-1, 1))
+heatmaply(cor(mtcars), colors = RdBu, limits = c(-1, 1))
 }
 }
 \references{

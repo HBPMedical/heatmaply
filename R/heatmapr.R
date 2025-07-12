@@ -16,7 +16,7 @@ all_unique <- function(x, ...) {
 }
 
 fix_not_all_unique <- function(x, ...) {
-  if(all_unique(x)) {
+  if (all_unique(x)) {
     return(x)
   } else {
     warning("Not all the values are unique - manually added prefix numbers")
@@ -85,7 +85,7 @@ fix_not_all_unique <- function(x, ...) {
 #' @param show_dendrogram Logical vector of length controlling whether the row
 #' and column dendrograms are displayed. If a logical scalar is
 #' provided, it is repeated to become a logical vector of length two.
-#' @param reorderfun function(d, w) of dendrogram and weights for reordering the row and column dendrograms. The default uses stats{reorder.dendrogram}
+#' @param reorderfun function(d, w) of dendrogram and weights for reordering the row and column dendrograms. The default uses \link[stats]{reorder.dendrogram}
 #'
 #' @param k_row an integer scalar with the desired number of groups by which to color the dendrogram's branches in the rows (uses \link[dendextend]{color_branches})
 #' If NA then \link[dendextend]{find_k} is used to deduce the optimal number of clusters.
@@ -94,7 +94,7 @@ fix_not_all_unique <- function(x, ...) {
 #'
 #' @param symm logical indicating if x should be treated symmetrically; can only be true when x is a square matrix.
 #' @param revC logical indicating if the column order should be reversed for plotting.
-#' Default (when missing) - is FALSE, unless symm is TRUE.
+#' Default (when NULL) - is FALSE, unless symm is TRUE.
 #' This is useful for cor matrix.
 #'
 #' @param scale character indicating if the values should be centered and scaled in either the row direction or the column direction, or none. The default is "none".
@@ -105,9 +105,9 @@ fix_not_all_unique <- function(x, ...) {
 #' that has the human-readable version of each value,
 #' for displaying on top of the heatmap cells.
 #'
-#' @param cexRow positive numbers. If not missing, it will override \code{xaxis_font_size}
+#' @param cexRow positive numbers. If not NULL, it will override \code{xaxis_font_size}
 #' and will give it a value cexRow*14
-#' @param cexCol positive numbers. If not missing, it will override \code{yaxis_font_size}
+#' @param cexCol positive numbers. If not NULL, it will override \code{yaxis_font_size}
 #' and will give it a value cexCol*14
 #'
 #' @param labRow character vectors with row labels to use (from top to bottom); default to rownames(x).
@@ -126,6 +126,7 @@ fix_not_all_unique <- function(x, ...) {
 #' "GW" (Gruvaeus and Wainer heuristic to optimize the Hamiltonian path length that is restricted by the dendrogram structure)
 #' @param point_size_mat A matrix of values which can be mapped to point size
 #' @param custom_hovertext Custom hovertext matrix (the same dimensions as the input).
+#'
 #' @param ... currently ignored
 #'
 #' @export
@@ -136,7 +137,6 @@ fix_not_all_unique <- function(x, ...) {
 #' \link{heatmap}, \link[gplots]{heatmap.2}
 #'
 #' @examples
-#'
 #' \dontrun{
 #' library(heatmaply)
 #' hm <- heatmapr(mtcars, scale = "column", colors = "Blues")
@@ -144,44 +144,34 @@ fix_not_all_unique <- function(x, ...) {
 #' }
 #'
 heatmapr <- function(x,
-
                      ## dendrogram control
-                     Rowv,
-                     Colv,
+                     Rowv = NULL,
+                     Colv = NULL,
                      distfun = dist,
                      hclustfun = hclust,
                      dist_method = NULL,
                      hclust_method = NULL,
-
-                     distfun_row,
-                     hclustfun_row,
-                     distfun_col,
-                     hclustfun_col,
-
+                     distfun_row = distfun,
+                     hclustfun_row = hclustfun,
+                     distfun_col = distfun,
+                     hclustfun_col = hclustfun,
                      dendrogram = c("both", "row", "column", "none"),
                      show_dendrogram = c(TRUE, TRUE),
                      reorderfun = function(d, w) reorder(d, w),
-
                      k_row = 1,
                      k_col = 1,
-
                      symm = FALSE,
-                     revC,
-
+                     revC = symm || (is.dendrogram(Colv) & is.dendrogram(Rowv) & identical(Rowv, rev(Colv))),
                      ## data scaling
                      scale = c("none", "row", "column"),
                      na.rm = TRUE,
-
                      labRow = rownames(x),
                      labCol = colnames(x),
-
-                     cexRow,
-                     cexCol,
-
+                     cexRow = NULL,
+                     cexCol = NULL,
                      ## value formatting
                      digits = 3L,
                      cellnote = NULL,
-
                      ## TODO: decide later which names/conventions to keep
                      theme = NULL,
                      colors = "RdYlBu",
@@ -193,8 +183,8 @@ heatmapr <- function(x,
                      brush_color = "#0000FF",
                      show_grid = TRUE,
                      anim_duration = 500,
-                     row_side_colors,
-                     col_side_colors,
+                     row_side_colors = NULL,
+                     col_side_colors = NULL,
                      seriate = c("OLO", "mean", "none", "GW"),
                      point_size_mat = NULL,
                      custom_hovertext = NULL,
@@ -227,11 +217,6 @@ heatmapr <- function(x,
     show_dendrogram <- rep(show_dendrogram, 2)
   }
 
-  if (missing(distfun_row)) distfun_row <- distfun
-  if (missing(hclustfun_row)) hclustfun_row <- hclustfun
-  if (missing(distfun_col)) distfun_col <- distfun
-  if (missing(hclustfun_col)) hclustfun_col <- hclustfun
-
   distfun_row <- match.fun(distfun_row)
   distfun_col <- match.fun(distfun_col)
 
@@ -248,7 +233,7 @@ heatmapr <- function(x,
   nr <- nrow(x)
   nc <- ncol(x)
   ### TODO: debating if to include this or not:
-  #   if(nr <= 1 || nc <= 1)
+  #   if (nr <= 1 || nc <= 1)
   #     stop("`x' must have at least 2 rows and 2 columns")
 
 
@@ -262,14 +247,14 @@ heatmapr <- function(x,
   rownames(x) <- fix_not_all_unique(rownames(x))
   colnames(x) <- fix_not_all_unique(colnames(x))
 
-  if (!missing(cexRow)) {
+  if (!is.null(cexRow)) {
     if (is.numeric(cexRow)) {
       xaxis_font_size <- cexRow * 14
     } else {
       warning("cexRow is not numeric. It is ignored")
     }
   }
-  if (!missing(cexCol)) {
+  if (!is.null(cexCol)) {
     if (is.numeric(cexCol)) {
       yaxis_font_size <- cexCol * 14
     } else {
@@ -281,13 +266,20 @@ heatmapr <- function(x,
   ## ====================
   scale <- match.arg(scale)
 
-  if (scale == "row") {
-    x <- sweep(x, 1, rowMeans(x, na.rm = na.rm))
-    x <- sweep(x, 1, apply(x, 1, sd, na.rm = na.rm), "/")
+  scaler <- function(x, dim = c(1, 2)) {
+    x <- sweep(x, dim, apply(x, dim, mean, na.rm=na.rm))
+    sds <- apply(x, dim, sd, na.rm = na.rm)
+    if (any(sds == 0)) {
+      dn <- if (dim == 1) "row(s)" else "column(s)"
+      stop(paste0("Some ", dn, " have zero variance."))
+    }
+    sweep(x, dim, sds, "/")
   }
-  else if (scale == "column") {
-    x <- sweep(x, 2, colMeans(x, na.rm = na.rm))
-    x <- sweep(x, 2, apply(x, 2, sd, na.rm = na.rm), "/")
+
+  if (scale == "row") {
+    x <- scaler(x, 1)
+  } else if (scale == "column") {
+    x <- scaler(x, 2)
   }
 
   ## Dendrograms for Row/Column
@@ -295,10 +287,10 @@ heatmapr <- function(x,
   dendrogram <- match.arg(dendrogram)
 
   # Use dendrogram argument to set defaults for Rowv/Colv
-  if (missing(Rowv)) {
+  if (is.null(Rowv)) {
     Rowv <- dendrogram %in% c("both", "row")
   }
-  if (missing(Colv)) {
+  if (is.null(Colv)) {
     if (dendrogram %in% c("both", "column")) {
       Colv <- if (symm) "Rowv" else TRUE
     } else {
@@ -365,15 +357,6 @@ heatmapr <- function(x,
   # TODO:  We may wish to change the defaults a bit in the future
   ## revC
   ## =======================
-  if (missing(revC)) {
-    if (symm) {
-      revC <- TRUE
-    } else if (is.dendrogram(Colv) & is.dendrogram(Rowv) & identical(Rowv, rev(Colv))) {
-      revC <- TRUE
-    } else {
-      revC <- FALSE
-    }
-  }
   if (revC) {
     Colv <- rev(Colv)
     colInd <- rev(colInd)
@@ -393,14 +376,14 @@ heatmapr <- function(x,
   if (!is.null(custom_hovertext)) {
     custom_hovertext <- custom_hovertext[rowInd, colInd, drop = FALSE]
   }
-  if (!missing(row_side_colors)) {
+  if (!is.null(row_side_colors)) {
     if (!(is.data.frame(row_side_colors) | is.matrix(row_side_colors))) {
       row_side_colors <- data.frame("row_side_colors" = row_side_colors)
     }
     assert_that(nrow(row_side_colors) == nrow(x))
     row_side_colors <- row_side_colors[rowInd, , drop = FALSE]
   }
-  if (!missing(col_side_colors)) {
+  if (!is.null(col_side_colors)) {
     if (!(is.data.frame(col_side_colors) | is.matrix(col_side_colors))) {
       col_side_colors <- data.frame(col_side_colors)
       colnames(col_side_colors) <- "col_side_colors"
@@ -416,7 +399,7 @@ heatmapr <- function(x,
   # ----------------
   # Due to the internal working of dendextend, in order to use it we first need
   # to populate the dendextend::dendextend_options() space:
-  # if(!missing(k_row) | !missing(k_col))  # Setting k_row and k_col to 1 by default
+  # if (!missing(k_row) | !missing(k_col))  # Setting k_row and k_col to 1 by default
   dendextend::assign_dendextend_options()
 
   if (is.dendrogram(Rowv)) {
@@ -424,7 +407,8 @@ heatmapr <- function(x,
 
     if (k_row > 1) {
       Rowv <- color_branches(
-        Rowv, k = k_row,
+        Rowv,
+        k = k_row,
         col = k_colors(k_row)
       )
     }
@@ -434,7 +418,8 @@ heatmapr <- function(x,
 
     if (k_col > 1) {
       Colv <- color_branches(
-        Colv, k = k_col,
+        Colv,
+        k = k_col,
         col = k_colors(k_col)
       )
     }
@@ -462,9 +447,9 @@ heatmapr <- function(x,
   ## Final touches before exporting the object
   ## =======================
 
-  # if(!is.null(custom_hovertext) && !is.matrix(custom_hovertext)) {
-  if(is.data.frame(custom_hovertext)) {
-      custom_hovertext <- as.matrix(custom_hovertext)
+  # if (!is.null(custom_hovertext) && !is.matrix(custom_hovertext)) {
+  if (is.data.frame(custom_hovertext)) {
+    custom_hovertext <- as.matrix(custom_hovertext)
   }
 
   mtx <- list(
@@ -515,8 +500,8 @@ heatmapr <- function(x,
     theme = theme, options = options
   )
 
-  if (!missing(row_side_colors)) heatmapr[["row_side_colors"]] <- row_side_colors
-  if (!missing(col_side_colors)) heatmapr[["col_side_colors"]] <- col_side_colors
+  if (!is.null(row_side_colors)) heatmapr[["row_side_colors"]] <- row_side_colors
+  if (!is.null(col_side_colors)) heatmapr[["col_side_colors"]] <- col_side_colors
 
   class(heatmapr) <- "heatmapr"
 

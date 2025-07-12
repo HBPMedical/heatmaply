@@ -49,10 +49,10 @@
 #' @name RColorBrewer_colors
 #'
 #' @description
-#' Functions for getting the colors of RColorBrewer (i.e.: \link{brewer.pal}) without the limitation of only 9/11
+#' Functions for getting the colors of RColorBrewer (i.e.: \link[RColorBrewer]{brewer.pal}) without the limitation of only 9/11
 #' color values, based on \link{colorRampPalette}.
 #'
-#' For sequential palettes this is not essential since we have \link{viridis}. But for diverging palettes
+#' For sequential palettes this is not essential since we have \link[viridis]{viridis}. But for diverging palettes
 #' this is quit essential.
 #'
 #' The sequential palettes names are
@@ -81,17 +81,21 @@
 #' \dontrun{
 #'
 #' library(RColorBrewer)
-#' display.brewer.all(n=11,type="div"); title(main = "Divergent color palette")
-#' display.brewer.all(n=9,type=c("seq")); title(main = "Sequential color palette")
+#' display.brewer.all(n = 11, type = "div")
+#' title(main = "Divergent color palette")
+#' display.brewer.all(n = 9, type = c("seq"))
+#' title(main = "Sequential color palette")
 #'
 #'
 #'
 #' img <- function(obj, nam) {
-#'   image(1:length(obj), 1, as.matrix(1:length(obj)), col=obj,
-#'         main = nam, ylab = "", xaxt = "n", yaxt = "n",  bty = "n")
+#'   image(1:length(obj), 1, as.matrix(1:length(obj)),
+#'     col = obj,
+#'     main = nam, ylab = "", xaxt = "n", yaxt = "n", bty = "n"
+#'   )
 #' }
 #'
-#' par(mfrow = c(10,1))
+#' par(mfrow = c(10, 1))
 #' img(rev(cool_warm(500)), "cool_warm, (Moreland 2009)")
 #' img(RdBu(500), "RdBu")
 #' img(BrBG(500), "BrBG")
@@ -105,9 +109,8 @@
 #'
 #'
 #' library(heatmaply)
-#' heatmaply(cor(mtcars), colors = PiYG, limits = c(-1,1))
-#' heatmaply(cor(mtcars), colors = RdBu, limits = c(-1,1))
-#'
+#' heatmaply(cor(mtcars), colors = PiYG, limits = c(-1, 1))
+#' heatmaply(cor(mtcars), colors = RdBu, limits = c(-1, 1))
 #' }
 NULL
 
@@ -284,7 +287,7 @@ GpdivergingColormap <- function(s, rgb1, rgb2, outColorspace = "sRGB") {
     if (msh[1] >= unsatM - 0.1) {
       h <- msh[3]
     } else {
-      hueSpin <- (msh[2] * sqrt(unsatM ^ 2 - msh[1] ^ 2) / (msh[1] *
+      hueSpin <- (msh[2] * sqrt(unsatM^2 - msh[1]^2) / (msh[1] *
         sin(msh[2])))
       if (msh[3] > -0.3 * pi) {
         h <- msh[3] + hueSpin
@@ -307,8 +310,7 @@ GpdivergingColormap <- function(s, rgb1, rgb2, outColorspace = "sRGB") {
         msh2[2] <- 0
         msh2[3] <- 0
         s <- 2 * s
-      }
-      else {
+      } else {
         msh1[1] <- Mmid
         msh1[2] <- 0
         msh1[3] <- 0
@@ -327,10 +329,12 @@ GpdivergingColormap <- function(s, rgb1, rgb2, outColorspace = "sRGB") {
     as(MshToLab(mshTmp), outColorspace)
   }
   dvmap <- matrix(0, length(s), 3)
-  for (n in 1:length(s)) dvmap[n, ] <- divergingMap1val(
+  for (n in 1:length(s)) {
+    dvmap[n, ] <- divergingMap1val(
       s[n],
       rgb1, rgb2, outColorspace
     )@coords
+  }
   dvmap
 }
 
